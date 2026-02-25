@@ -232,9 +232,139 @@
         this.reset();
     });
 
-    // Initialize cart render on page load
+    // Initialize cart render and auth state on page load
     $(document).ready(function () {
         renderCart();
+        if (typeof window.updateNavbar === 'function') {
+            window.updateNavbar();
+        }
+    });
+
+    // --- Authentication Logic ---
+
+    // Get all users from localStorage
+    window.getUsers = function () {
+        return JSON.parse(localStorage.getItem('users')) || [];
+    };
+
+    // Get current logged-in user
+    window.getCurrentUser = function () {
+        return JSON.parse(localStorage.getItem('currentUser'));
+    };
+
+    // Update Navbar based on auth state
+    window.updateNavbar = function () {
+        const currentUser = window.getCurrentUser();
+        if (currentUser) {
+            // User logged in
+            $('#nav-auth-buttons').addClass('d-none').removeClass('d-flex');
+            $('#nav-user-info').addClass('d-flex').removeClass('d-none');
+            $('#user-greeting').text('Welcome, ' + currentUser.firstName);
+        } else {
+            // Not logged in
+            $('#nav-auth-buttons').addClass('d-flex').removeClass('d-none');
+            $('#nav-user-info').addClass('d-none').removeClass('d-flex');
+        }
+    };
+
+    // Logout User
+    window.logoutUser = function (event) {
+        if (event) event.preventDefault();
+        localStorage.removeItem('currentUser');
+        window.location.reload();
+    };
+
+    // Register User
+    window.registerUser = function (event) {
+        event.preventDefault();
+
+        const form = event.target;
+
+        // Reset custom validities
+        $('#reg-confirm-password').get(0).setCustomValidity('');
+        $('#reg-email').get(0).setCustomValidity('');
+
+        const password = $('#reg-password').val();
+        const confirmPassword = $('#reg-confirm-password').val();
+
+        if (password !== confirmPassword) {
+            $('#reg-confirm-password').get(0).setCustomValidity('Passwords must match');
+            $('#reg-confirm-password-error').text('Passwords must match.');
+        }
+
+        const email = $('#reg-email').val().trim();
+        const users = window.getUsers();
+        if (users.some(user => user.email === email)) {
+            $('#reg-email').get(0).setCustomValidity('Email already exists');
+            $('#reg-email-error').text('Email is already registered.');
+        }
+
+        if (!form.checkValidity()) {
+            event.stopPropagation();
+            form.classList.add('was-validated');
+            return;
+        }
+
+        // Save user
+        const newUser = {
+            firstName: $('#reg-firstname').val().trim(),
+            lastName: $('#reg-lastname').val().trim(),
+            email: email,
+            phone: $('#reg-phone').val().trim(),
+            password: password,
+            address: $('#reg-address').val().trim(),
+            city: $('#reg-city').val().trim(),
+            state: $('#reg-state').val().trim(),
+            zip: $('#reg-zip').val().trim()
+        };
+
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+
+        alert('Registration successful! Please login.');
+        window.location.href = 'login.html';
+    };
+
+    // Login User
+    window.loginUser = function (event) {
+        event.preventDefault();
+
+        const form = event.target;
+        $('#login-password').get(0).setCustomValidity('');
+
+        const email = $('#login-email').val().trim();
+        const password = $('#login-password').val();
+
+        const users = window.getUsers();
+        const user = users.find(u => u.email === email && u.password === password);
+
+        if (!user) {
+            $('#login-password').get(0).setCustomValidity('Invalid credentials');
+            $('#login-password-error').text('Invalid email or password.');
+        }
+
+        if (!form.checkValidity()) {
+            event.stopPropagation();
+            form.classList.add('was-validated');
+            return;
+        }
+
+        if (user) {
+            const currentUser = {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email
+            };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            window.location.href = 'index.html';
+        }
+    };
+
+    // Clear custom validation on input change
+    $(document).on('input', '#reg-confirm-password, #reg-email, #login-password', function () {
+        if (this.setCustomValidity) {
+            this.setCustomValidity('');
+        }
     });
 
 })(jQuery);

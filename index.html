@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Hairnic - Single Product Website Template</title>
+    <title>Hairnic</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -95,6 +95,15 @@
                                 class="badge bg-primary text-white rounded-circle cart-badge"
                                 style="position:relative; top:-2px;">0</span>
                         </a>
+
+                        <div class="nav-item d-none align-items-center" id="nav-user-info">
+                            <span class="nav-link text-primary fw-bold" id="user-greeting">Welcome, User</span>
+                            <a href="#" class="nav-item nav-link" onclick="logoutUser(event)">Logout</a>
+                        </div>
+                        <div class="nav-item d-flex align-items-center" id="nav-auth-buttons">
+                            <a href="login.html" class="nav-item nav-link">Login</a>
+                            <a href="register.html" class="nav-item nav-link">Register</a>
+                        </div>
                     </div>
                 </div>
             </nav>
